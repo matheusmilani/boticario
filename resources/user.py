@@ -41,13 +41,13 @@ class UserResource(Resource):
                 return 'Email incorreto', 401
 
             if data['role'] not in ['admin', 'reseller']:
-                return 'Perfil incorreto, selecione entre: "admin" ou "reseller"'
+                return 'Perfil incorreto, selecione entre: "admin" ou "reseller"', 401
 
             if UserModel.get_by_cpf(data['cpf']) != None:
-                return 'CPF já registrado'
+                return 'CPF já registrado', 401
 
             if UserModel.get_by_email(data['email']) != None:
-                return 'Email já registrado'
+                return 'Email já registrado', 401
 
             for parameter in data:
                 setattr(item, parameter, data[parameter])

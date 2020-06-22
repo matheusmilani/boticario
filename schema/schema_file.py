@@ -10,6 +10,8 @@ class Schema:
         db.create_all()
 
     def prepare_db():
-        from schema.seed import first_user, first_purchase
+        from schema.seed import first_user, first_purchase, first_reseller_user
         first_user()
+        first_reseller_user()
+        first_purchase()
         return
