@@ -1,0 +1,15 @@
+flask
+flask_cors
+flask-cors
+flask_jwt_simple
+flask_restful
+flask_sqlalchemy
+openpyxl
+pandas
+passlib
+psycopg2-binary
+python-dotenv
+pytest
+pytest-cov
+sqlalchemy-utils
+requests
