@@ -40,13 +40,6 @@ def remove_repeated(itens):
 def isNoneOrZero(value):
     return True if value == 0 or value == None else False
 
-def to_selected_user(value):
-    processed_data = []
-    for item in value:
-        if item != None:
-            processed_data.append({'value': item['id'], 'label': item['name']})
-    return processed_data
-
 def check_email(email):
     email_regex = "[^@]+@[^@]+\.[^@]+"
     return re.search(email_regex, str(email)) != None
@@ -57,7 +50,7 @@ def check_cpf(cpf):
     return re.search(cpf_mask_regex, str(cpf)) != None or re.search(cpf_no_mask_regex, str(cpf)) != None
 
 def check_params(allowed_headers, request_headers):
-    return set(allowed_headers) == (request_headers)
+    return set(allowed_headers) == set(request_headers)
 
 def calculate_unit_cashback(value):
     if float(value) <= 1000:

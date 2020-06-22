@@ -59,7 +59,7 @@ class PurchaseResource(Resource):
                     return 'CPF incorreto', 401
 
                 if UserModel.get_by_cpf(data['cpf']) == None:
-                    return 'CPF não registrado'
+                    return 'CPF não registrado', 401
 
                 for parameter in data:
                     setattr(item, parameter, data[parameter])
@@ -85,7 +85,7 @@ class PurchaseResource(Resource):
         try:
             data = request.get_json()
             item = PurchaseModel.get(data['id'])
-            
+
             if item == None:
                 return "ID incorreto"
 

@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from . import create_test_app, app, client
 import pytest
 import json
+from models.purchase import PurchaseModel
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -170,6 +171,35 @@ class TestAdminActionEndpoint:
 
         assert res.status_code == 201
 
+    def test_delete_user(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.delete(
+            '/api/user?id=999',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 201
+
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.delete(
+            '/api/user',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 401
+
     def test_post_user_with_duplicate_cpf_or_email_params(self, client):
         auth = client.post(
             '/api/authentication',
@@ -203,21 +233,6 @@ class TestAdminActionEndpoint:
 
         assert res.status_code == 401
 
-    def test_get_cashback_endpoint(self, client):
-        auth = client.post(
-            '/api/authentication',
-            json={
-                'email': 'matheus.milani21@gmail.com',
-                'password': 'teste@1234'})
-        access_decode = json.loads(auth.data.decode())
-
-        res = client.get(
-            '/api/cashback?cpf=23666513840&month=06&year=2020',
-            headers={
-                'Authorization': access_decode['token']})
-
-        assert res.status_code == 200
-
     def test_get_purchase_endpoint(self, client):
         auth = client.post(
             '/api/authentication',
@@ -232,3 +247,217 @@ class TestAdminActionEndpoint:
                 'Authorization': access_decode['token']})
 
         assert res.status_code == 200
+
+    def test_get_purchase_by_id_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.get(
+            '/api/purchase?id=1',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 200
+        assert type(json.loads(res.data)) == type({})
+
+    def test_get_purchase_by_reseller_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.get(
+            '/api/purchase?cpf=74936635057',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 200
+        assert type(json.loads(res.data)) == type([])
+
+    def test_get_purchase_without_params_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.get(
+            '/api/purchase',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 200
+        assert type(json.loads(res.data)) == type([])
+
+    def test_post_purchase_with_wrong_params_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.post(
+            '/api/purchase',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 401
+
+    def test_post_purchase_with_wrong_cpf_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.post(
+            '/api/purchase',
+            json={
+                'cpf': '1234567890000000',
+                'value': 1000,
+                'code': 30},
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 401
+        assert json.loads(res.data) == 'CPF incorreto'
+
+        res = client.post(
+            '/api/purchase',
+            json={
+                'cpf': '23666513890',
+                'value': 1000,
+                'code': 30},
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 401
+        assert json.loads(res.data) == 'CPF não registrado'
+
+    def test_post_purchase_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.post(
+            '/api/purchase',
+            json={
+                'cpf': '74936635057',
+                'value': 1000,
+                'code': 30},
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 201
+        assert json.loads(res.data) == 'success'
+
+    def test_get_cashback_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.get(
+            '/api/cashback?cpf=23666513840&month=06&year=2020',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 200
+        assert type(json.loads(res.data)) == type({})
+
+    def test_get_cashback_with_wrong_params_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'matheus.milani21@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.get(
+            '/api/cashback',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 401
+
+class TestResellerActionEndpoint:
+    def test_authentication(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'reseller@gmail.com',
+                'password': 'teste@1234'})
+
+        access_decode = json.loads(auth.data.decode())
+
+        assert access_decode['name'] == "Matheus D'Adamo Milani"
+
+    def test_post_purchase_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'reseller@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        purchases = len(PurchaseModel.get_by_reseller(2))
+
+        res = client.post(
+            '/api/purchase',
+            json={
+                'value': 1000,
+                'code': 30},
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 201
+        assert json.loads(res.data) == 'success'
+
+        assert len(PurchaseModel.get_by_reseller(2)) == purchases + 1
+
+
+    def test_get_cashback_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'reseller@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.get(
+            '/api/cashback?month=06&year=2020',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 200
+        assert type(json.loads(res.data)) == type({})
+
+
+    def test_get_cashback_with_wrong_params_endpoint(self, client):
+        auth = client.post(
+            '/api/authentication',
+            json={
+                'email': 'reseller@gmail.com',
+                'password': 'teste@1234'})
+        access_decode = json.loads(auth.data.decode())
+
+        res = client.get(
+            '/api/cashback',
+            headers={
+                'Authorization': access_decode['token']})
+
+        assert res.status_code == 401

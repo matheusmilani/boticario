@@ -27,7 +27,9 @@ class CashbackResource(Resource):
                 return {"purchases": itens, "cashback_by_month": calculate_multi_cashback(itens)}
         else:
             if 'month' in request.args and 'year' in request.args:
-                itens = PurchaseModel.get_by_reseller(current_user['sub']['id'])
-                itens = serialize_model(itens)
+                itens = PurchaseModel.get_by_reseller(int(current_user['sub']['id']))
+                itens = serialize_model_list(itens)
                 itens = list(filter(lambda item: datetime.strptime(item['created_at'], "%Y-%m-%d %H:%M:%S.%f").month == int(request.args['month']) and datetime.strptime(item['created_at'], "%Y-%m-%d %H:%M:%S.%f").year == int(request.args['year']) and item['status'] == "Aprovado", itens))
                 return {"purchases": itens, "cashback_by_month": calculate_multi_cashback(itens)}
+
+        return "Parâmetros incorretos", 401
